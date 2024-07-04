@@ -85,7 +85,10 @@ func CreateSAMLResponse(issuer string, inRespTo string, recipient string, audien
 	asEl.CreateAttr("IssueInstant", issueTime)
 
 	//add Issuer
-	asEl.CreateElement("saml:Issuer").CreateText(issuer)
+	isEl := asEl.CreateElement("saml:Issuer")
+	isEl.CreateAttr("Format", "urn:oasis:names:tc:SAML:2.0:nameid-format:entity")
+	isEl.CreateAttr("xmlns:saml", "urn:oasis:names:tc:SAML:2.0:assertion")
+	isEl.CreateText("http://ec2-54-178-32-72.ap-northeast-1.compute.amazonaws.com")
 
 	addSubject(asEl, requestId, notOnOrAfter, recipient)
 	addConditions(asEl, notOnOrAfter, audience)
@@ -125,9 +128,6 @@ func createSAMLResponseElement(assertion *etree.Element, requestId string) *etre
 	resp.CreateAttr("ID", fmt.Sprintf("_%d", mrand.Int()))
 	resp.CreateAttr("InResponseTo", requestId)
 	resp.CreateAttr("Version", "2.0")
-	issuer := resp.CreateElement("saml:Issuer")
-	issuer.CreateAttr("xmlns:saml", "urn:oasis:names:tc:SAML:2.0:assertion")
-	issuer.CreateText("http://idp.samltools.com")
 	status := resp.CreateElement("samlp:Status")
 	stcode := status.CreateElement("samlp:StatusCode")
 	stcode.CreateAttr("Value", "urn:oasis:names:tc:SAML:2.0:status:Success")
@@ -137,8 +137,8 @@ func createSAMLResponseElement(assertion *etree.Element, requestId string) *etre
 func addSubject(assertionEl *etree.Element, requestId string, notOnOrAfter string, recipient string) {
 	subject := assertionEl.CreateElement("saml:Subject")
 	nameId := subject.CreateElement("saml:NameID")
-	nameId.CreateAttr("Format", "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified")
-	nameId.CreateText("IDPUser1")
+	nameId.CreateAttr("Format", "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress")
+	nameId.CreateText("[IAM Identity Center User emailAddress]")
 	subjectConf := subject.CreateElement("saml:SubjectConfirmation")
 	subjectConf.CreateAttr("Method", "urn:oasis:names:tc:SAML:2.0:cm:bearer")
 	subjectConfData := subjectConf.CreateElement("saml:SubjectConfirmationData")
