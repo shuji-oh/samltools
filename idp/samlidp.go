@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/beevik/etree"
 	"github.com/monmohan/samltools"
@@ -22,7 +23,8 @@ var defaultSigningContext *dsig.SigningContext
 
 func handleLogonRequest(w http.ResponseWriter, req *http.Request) {
 
-	authnReq := req.URL.Query().Get("SAMLRequest")
+	//authnReq := req.URL.Query().Get("SAMLRequest")
+	authnReq := req.FormValue("SAMLRequest")
 	relayState := req.URL.Query().Get("RelayState")
 
 	athnReqBytes, err := decodeSAMLRequest(authnReq)
@@ -40,7 +42,7 @@ func handleLogonRequest(w http.ResponseWriter, req *http.Request) {
 	doc.WriteTo(os.Stdout)
 	fmt.Println()
 
-	reqEl := doc.FindElement("./samlp:AuthnRequest")
+	reqEl := doc.FindElement("./saml2p:AuthnRequest")
 	if reqEl == nil {
 		badRequest(perrors.New("Can't read AuthnRequest element"), w)
 		return
@@ -51,7 +53,7 @@ func handleLogonRequest(w http.ResponseWriter, req *http.Request) {
 		badRequest(perrors.New("AuthnRequest element doesn't contain ID attribute"), w)
 		return
 	}
-	issuerEl := reqEl.FindElement("./saml:Issuer")
+	issuerEl := reqEl.FindElement("./saml2:Issuer")
 	if issuerEl == nil {
 		badRequest(perrors.New("Can't read Issuer element"), w)
 		return
@@ -122,9 +124,11 @@ func decodeSAMLRequest(req string) (decoded []byte, err error) {
 	if err != nil {
 		return []byte{}, perrors.Wrap(err, "Base64 decoding failed")
 	}
+	//fmt.Printf("\nDecorded SAML Request %s\n", data)
+	r_data := strings.NewReader(string(data))
 	zr := flate.NewReader(bytes.NewReader([]byte(data)))
 	var b bytes.Buffer
-	if _, err := io.Copy(&b, zr); err != nil {
+	if _, err := io.Copy(&b, r_data); err != nil {
 		return []byte{}, perrors.Wrap(err, "Copy() while decoding request failed")
 	}
 	if err := zr.Close(); err != nil {
