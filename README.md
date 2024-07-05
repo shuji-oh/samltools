@@ -1,6 +1,6 @@
 # samltools
 A playground to learn SAML. The source contains a simple Service Provider and an Identity Provider.
-As of now, Service Provider is tested with Auth0 and Okta. IDP is tested with Auth0.
+Service Provider is tested with Auth0, Okta, and IAM Identity Center SAML app. IDP is tested with IAM Identity Center.
 
 # How to setup a service provider locally?
 - Clone the repo
