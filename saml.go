@@ -59,7 +59,7 @@ func ValidateAssertion(base64EncResp string, validationContext *dsig.ValidationC
 		return fmt.Errorf("assertion element not found")
 	}
 
-	elem, err := validationContext.Validate(assertionEl)
+	elem, err := validationContext.Validate(doc.Root())
 	if err != nil {
 		return perrors.Wrap(err, fmt.Sprintf("Error validationContext, transformed =%v", elem))
 
